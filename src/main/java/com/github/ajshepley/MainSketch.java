@@ -1,5 +1,9 @@
 package com.github.ajshepley;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 import processing.core.PApplet;
 
 public class MainSketch extends PApplet {
@@ -13,7 +17,13 @@ public class MainSketch extends PApplet {
   }
 
   public static void main(final String[] args){
-//    PApplet.main("MainSketch");
-    PApplet.main(new String[] { "--present", MainSketch.class.getCanonicalName() });
+    final Set<String> argSet = new HashSet<>(
+        Arrays.asList("--present", MainSketch.class.getCanonicalName())
+    );
+
+    Optional.ofNullable(args).ifPresent(argArray -> argSet.addAll(Arrays.asList(args)));
+
+    // If empty, toArray will use the type info to make an appropriately sized array.
+    PApplet.main(argSet.toArray(new String[0]));
   }
 }
