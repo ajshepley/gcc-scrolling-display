@@ -1,0 +1,71 @@
+plugins {
+    id 'java'
+}
+
+group 'com.github.ajshepley.default'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dir 'lib'
+    }
+}
+
+ext {
+    testngVersion = '6.14.3'
+}
+
+dependencies {
+    compile ':core'
+    compile group: 'org.testng', name: 'testng', version: "${testngVersion}"
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.github.ajshepley.MainSketch'
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+test {
+    useTestNG() {
+        useDefaultListeners = true
+    }
+
+    testLogging.showStandardStreams = true
+
+    // listen to events in the test execution lifecycle
+    beforeTest { descriptor ->
+        logger.lifecycle("Running test: " + descriptor)
+    }
+
+    // listen to standard out and standard error of the test JVM(s)
+    onOutput { descriptor, event ->
+        logger.lifecycle("Test: " + descriptor + " output: " + event.message )
+    }
+}
+
+defaultTasks 'clean', 'build', 'test', 'jar'
