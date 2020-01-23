@@ -1,6 +1,9 @@
 plugins {
     id 'java'
+    id 'c'
 }
+
+// TODO: Clean up this mess of a grade buildfile.
 
 group 'com.github.ajshepley.default'
 version '1.0-SNAPSHOT'
@@ -8,6 +11,7 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = 1.8
 
 apply plugin: 'java'
+apply plugin: "c"
 
 repositories {
     mavenCentral()
@@ -20,11 +24,26 @@ ext {
     testngVersion = '6.14.3'
 }
 
+configurations {
+    externalLibs
+}
+
 dependencies {
     compile ':core'
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    compile ':serial'
+    compile ':gluegen-rt'
+    compile ':gluegen-rt-natives-windows-amd64'
+    compile ':jogl-all'
+    compile ':jogl-all-natives-windows-amd64'
+//    externalLibs files('jSSC-2.8.dll')
+    compile ':jssc'
+//    compile group: 'org.scream3r', name: 'jssc', version: '2.8.0'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
     compile group: 'org.testng', name: 'testng', version: "${testngVersion}"
+}
+
+test {
+    jvmArgs = ['-Djava.library.path=./lib']
 }
 
 jar {
