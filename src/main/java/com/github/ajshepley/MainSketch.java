@@ -17,14 +17,14 @@ public class MainSketch extends PApplet {
   // the number 10 is ASCII for linefeed (end of serial.println),
   // later we will look for this to break up individual messages
   // Adam: Not sure if this is utilized by PApplet in some way.
-  protected final int end = 10;
+  public final int end = 10;
 
   // TODO: Can this be inlined in draw()?
-  protected String serial;
+  String serial;
 
   // TODO: rename serialPort
   // TODO: See if it works if we inline the initialization/assignment here, make final.
-  protected Serial port;
+  Serial port;
 
   // TODO: Rename these arrays.
   private final PImage[] buttons = new PImage[12];
@@ -105,12 +105,18 @@ public class MainSketch extends PApplet {
     sticks[1] = super.loadImage("c_stick.png");
   }
 
+  String raw;
+
   @Override
   public void draw() {
-    final String raw = this.port.readString();
+    raw = this.port.readString();
+
+//    if (new java.util.Random().nextInt(10) / 2 > 3 && raw != null) {
+//      System.out.println("Raw string is: \n[" + raw.replace('\n', ' ') + "]");
+//    }
 
     if (StringUtils.isNotBlank(raw)) {
-      final String[] inputGlob = PApplet.split(raw, '\r');
+      final String[] inputGlob = raw.split("\r");
 
       if (inputGlob.length < 2) {
         return;
@@ -125,8 +131,20 @@ public class MainSketch extends PApplet {
 
       // a new array (called 'a') that stores values into separate cells
       // (separated by commas specified in your Arduino program)
-      final String[] input = PApplet.split(serial, ',');
+      final String[] input = serial.split(","); //PApplet.split(serial, ',');
 
+      // FIXME: New input is 11 digits long for arduino 1.6 hex.
+      // [0, 0, 0, 0, 0, 0, 0, 126, 117, 126, 129]
+      // [A, B, X, Y, Z, L, R, LS X, LS Y, CS X, CS Y]
+      // Above ls/cs values are resting values, +/- 2
+      // TODO: Make this mapping configurable at runtime.
+
+      if (new java.util.Random().nextInt(10) / 2 > 3 && raw != null) {
+        System.out.println("Input string is: \n" + Arrays.toString(input) + "");
+      }
+
+      // This won't work. The input for the 1.6 hex is now, inexplicably, only 11 digits long.
+      // Perhaps this is due to differences with String.split vs.
       if (input.length != 16) {
         return;
       }
@@ -143,13 +161,13 @@ public class MainSketch extends PApplet {
       draw_button(input, 6, 190, 90, this.buttons, this.pressed_buttons); // r
 
       draw_button(input, 4, 190, 165, this.buttons, this.pressed_buttons); // z
-      draw_button(input, 11, 300, 185, this.buttons, this.pressed_buttons); // start
 
       draw_button(input, 7, 20, 290, this.buttons, this.pressed_buttons); // d_left
       draw_button(input, 8, 60, 290, this.buttons, this.pressed_buttons); // d_up
       draw_button(input, 9, 100, 290, this.buttons, this.pressed_buttons); // d_down
       draw_button(input, 10, 140, 290, this.buttons, this.pressed_buttons); // d_right
 
+      draw_button(input, 11, 300, 185, this.buttons, this.pressed_buttons); // start
       // TODO: Extract magic number indexes to static vars.
       draw_stick(input, 12, 0, 100, 220, 90, 2.844f, this.sticks); // a stick
       draw_stick(input, 14, 1, 240, 260, 80, 3.2f, this.sticks); // c stick
@@ -198,6 +216,11 @@ public class MainSketch extends PApplet {
       super.image(pressed_buttons[index], x, y);
     }
   }
+//
+//  static
+//  {
+//    System.setProperty("java.library.path", "lib");
+//  }
 
   public static void main(final String[] args){
     // I don't recall why `--present` is needed. Comments are important, kids.
