@@ -98,6 +98,7 @@ launch4j {
     downloadUrl = "https://adoptopenjdk.net/"
 }
 
+// TODO: Inline this into the jar, extract at runtime.
 task copyData {
     doLast {
         copy {
