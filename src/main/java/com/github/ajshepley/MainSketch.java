@@ -11,6 +11,8 @@ import processing.serial.Serial;
 
 public class MainSketch extends PApplet {
 
+  // must match that of Arduino
+  private static final int ARDUINO_BAUD_RATE = 115200;
   private static final int WINDOW_WIDTH = 500;
   private static final int WINDOW_HEIGHT = 500;
 
@@ -19,21 +21,15 @@ public class MainSketch extends PApplet {
   // Adam: Not sure if this is utilized by PApplet in some way.
   public final int end = 10;
 
-  // TODO: Can this be inlined in draw()?
-  String serial;
-
   // TODO: rename serialPort
   // TODO: See if it works if we inline the initialization/assignment here, make final.
-  Serial port;
+  private Serial port;
 
   // TODO: Rename these arrays.
   private final PImage[] buttons = new PImage[12];
   private final PImage[] pressed_buttons = new PImage[12];
   private final PImage[] stick_bases = new PImage[2];
   private final PImage[] sticks = new PImage[2];
-
-  // TODO: Unneeded?
-  private PImage gcc;
 
   @Override
   public void settings() {
@@ -43,7 +39,7 @@ public class MainSketch extends PApplet {
   @Override
   public void setup() {
     // initializing the object by assigning a port and baud rate (must match that of Arduino)
-    this.port = new Serial(this, Serial.list()[1], 115200);
+    this.port = new Serial(this, Serial.list()[1], ARDUINO_BAUD_RATE);
     // function from serial library that throws out the first reading,
     // in case we started reading in the middle of a string from Arduino
     this.port.clear();
@@ -83,21 +79,6 @@ public class MainSketch extends PApplet {
     buttons[6] = super.loadImage("r.png");
     pressed_buttons[6] = super.loadImage("r_press.png");
 
-    buttons[7] = super.loadImage("d_left.png");
-    pressed_buttons[7] = super.loadImage("d_left_press.png");
-
-    buttons[8] = super.loadImage("d_up.png");
-    pressed_buttons[8] = super.loadImage("d_up_press.png");
-
-    buttons[9] = super.loadImage("d_down.png");
-    pressed_buttons[9] = super.loadImage("d_down_press.png");
-
-    buttons[10] = super.loadImage("d_right.png");
-    pressed_buttons[10] = super.loadImage("d_right_press.png");
-
-    buttons[11] = super.loadImage("start.png");
-    pressed_buttons[11] = super.loadImage("start_press.png");
-
     stick_bases[0] = super.loadImage("a_stick_base.png");
     sticks[0] = super.loadImage("a_stick.png");
 
@@ -105,11 +86,9 @@ public class MainSketch extends PApplet {
     sticks[1] = super.loadImage("c_stick.png");
   }
 
-  String raw;
-
   @Override
   public void draw() {
-    raw = this.port.readString();
+    final String raw = this.port.readString();
 
 //    if (new java.util.Random().nextInt(10) / 2 > 3 && raw != null) {
 //      System.out.println("Raw string is: \n[" + raw.replace('\n', ' ') + "]");
@@ -122,16 +101,16 @@ public class MainSketch extends PApplet {
         return;
       }
 
-      serial = inputGlob[inputGlob.length - 2];
+      final String serial = inputGlob[inputGlob.length - 2];
       if (serial.length() == 0) {
         return;
       }
 
-      serial = serial.substring(1);
+      final String parsedSerial = serial.substring(1);
 
       // (separated by commas specified in your Arduino program)
       // PApplet.split(serial, ',');
-      final String[] input = serial.split(",");
+      final String[] input = parsedSerial.split(",");
 
       // FIXME: New input is 11 digits long for arduino 1.6 hex. No DPAD or Start buttons (hence, not 16).
       // [0, 0, 0, 0, 0, 0, 0, 126, 117, 126, 129]
@@ -139,7 +118,7 @@ public class MainSketch extends PApplet {
       // Above ls/cs values are resting values, +/- 2
 
       // TODO: Extract to logInput(input[]) method, make randomness clearer.
-      if (new java.util.Random().nextInt(10) / 2 > 3 && raw != null) {
+      if (new java.util.Random().nextInt(10) / 2 > 3) {
         System.out.println("Input string is: \n" + Arrays.toString(input) + "");
       }
 
@@ -214,11 +193,6 @@ public class MainSketch extends PApplet {
       super.image(pressed_buttons[arduinoInputIndex], x, y);
     }
   }
-//
-//  static
-//  {
-//    System.setProperty("java.library.path", "lib");
-//  }
 
   public static void main(final String[] args){
     // I don't recall why `--present` is needed. Comments are important, kids.
