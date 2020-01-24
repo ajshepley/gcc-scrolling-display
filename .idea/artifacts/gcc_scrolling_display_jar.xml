@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="gcc-scrolling-display:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/gcc_scrolling_display_jar</output-path>
+    <root id="archive" name="gcc-scrolling-display.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/META-INF/MANIFEST.MF" />
+      </element>
+    </root>
+  </artifact>
+</component>
