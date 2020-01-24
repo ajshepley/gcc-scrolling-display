@@ -1,24 +1,31 @@
-plugins {
-    id 'java'
-    id 'c'
-}
-
 // TODO: Clean up this mess of a grade buildfile.
-
-group 'com.github.ajshepley.default'
+group 'com.github.ajshepley'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
-
-apply plugin: 'java'
-apply plugin: "c"
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'edu.sc.seis.gradle:launch4j:2.4.6'
+    }
+}
 
 repositories {
+    jcenter()
     mavenCentral()
     flatDir {
         dir 'lib'
     }
 }
+
+apply plugin: 'java'
+apply plugin: 'c'
+apply plugin: 'edu.sc.seis.launch4j'
+apply plugin: 'application'
+
+sourceCompatibility = 1.8
+mainClassName = 'com.github.ajshepley.MainSketch'
 
 ext {
     testngVersion = '6.14.3'
@@ -48,7 +55,10 @@ test {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.github.ajshepley.MainSketch'
+        attributes (
+                'Main-Class': mainClassName,
+                "Class-Path": '.;' + configurations.compile.collect { it.getName() }.join(';')
+        )
     }
 
     from {
@@ -71,6 +81,37 @@ artifacts {
     archives javadocJar
 }
 
+def exeDir = 'executable'
+
+// TODO: Configure proper error messages. https://github.com/TheBoegl/gradle-launch4j
+launch4j {
+    icon = "${projectDir}\\data\\controller.ico"
+    mainClassName = mainClassName
+    outputDir = "${exeDir}"
+    jreMinVersion = sourceCompatibility
+    jreMaxVersion = '1.9'
+    bundledJre64Bit = true
+    bundledJreAsFallback = true
+    // FIXME: This doesn't seem to work right on windows.
+    bundledJrePath = System.properties.'java.home'
+    println "Bundling JRE at: " + System.properties.'java.home'
+    downloadUrl = "https://adoptopenjdk.net/"
+}
+
+task copyData {
+    doLast {
+        copy {
+            from 'data'
+            into "$buildDir/${exeDir}/data"
+            include '**/*.png'
+        }
+    }
+}
+
+task removeUnnecessaryLibs(type: Delete) {
+    delete "$buildDir/${exeDir}/lib"
+}
+
 test {
     useTestNG() {
         useDefaultListeners = true
@@ -89,4 +130,4 @@ test {
     }
 }
 
-defaultTasks 'clean', 'build', 'test', 'jar'
+defaultTasks 'clean', 'build', 'test', 'jar', 'createExe', 'copyData', 'removeUnnecessaryLibs'
