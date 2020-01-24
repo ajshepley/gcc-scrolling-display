@@ -129,64 +129,62 @@ public class MainSketch extends PApplet {
 
       serial = serial.substring(1);
 
-      // a new array (called 'a') that stores values into separate cells
       // (separated by commas specified in your Arduino program)
-      final String[] input = serial.split(","); //PApplet.split(serial, ',');
+      // PApplet.split(serial, ',');
+      final String[] input = serial.split(",");
 
-      // FIXME: New input is 11 digits long for arduino 1.6 hex.
+      // FIXME: New input is 11 digits long for arduino 1.6 hex. No DPAD or Start buttons (hence, not 16).
       // [0, 0, 0, 0, 0, 0, 0, 126, 117, 126, 129]
       // [A, B, X, Y, Z, L, R, LS X, LS Y, CS X, CS Y]
       // Above ls/cs values are resting values, +/- 2
-      // TODO: Make this mapping configurable at runtime.
 
+      // TODO: Extract to logInput(input[]) method, make randomness clearer.
       if (new java.util.Random().nextInt(10) / 2 > 3 && raw != null) {
         System.out.println("Input string is: \n" + Arrays.toString(input) + "");
       }
 
       // This won't work. The input for the 1.6 hex is now, inexplicably, only 11 digits long.
       // Perhaps this is due to differences with String.split vs.
-      if (input.length != 16) {
+      if (input.length != ButtonIndexes.MAX_INDEX + 1) {
         return;
       }
 
       draw_stick_base(0, 100, 220, this.stick_bases); // a stick
       draw_stick_base(1, 240, 260, this.stick_bases); // c stick
 
-      draw_button(input, 0, 340, 160, this.buttons, this.pressed_buttons); // a
-      draw_button(input, 1, 300, 230, this.buttons, this.pressed_buttons); // b
-      draw_button(input, 2, 420, 145, this.buttons, this.pressed_buttons); // x
-      draw_button(input, 3, 323, 112, this.buttons, this.pressed_buttons); // y
+      draw_button(input, ButtonIndexes.A, 340, 160, this.buttons, this.pressed_buttons); // a
+      draw_button(input, ButtonIndexes.B, 300, 230, this.buttons, this.pressed_buttons); // b
+      draw_button(input, ButtonIndexes.X, 420, 145, this.buttons, this.pressed_buttons); // x
+      draw_button(input, ButtonIndexes.Y, 323, 112, this.buttons, this.pressed_buttons); // y
+      draw_button(input, ButtonIndexes.L, 55, 90, this.buttons, this.pressed_buttons); // l
+      draw_button(input, ButtonIndexes.R, 190, 90, this.buttons, this.pressed_buttons); // r
+      draw_button(input, ButtonIndexes.Z, 190, 165, this.buttons, this.pressed_buttons); // z
 
-      draw_button(input, 5, 55, 90, this.buttons, this.pressed_buttons); // l
-      draw_button(input, 6, 190, 90, this.buttons, this.pressed_buttons); // r
-
-      draw_button(input, 4, 190, 165, this.buttons, this.pressed_buttons); // z
-
-      draw_button(input, 7, 20, 290, this.buttons, this.pressed_buttons); // d_left
-      draw_button(input, 8, 60, 290, this.buttons, this.pressed_buttons); // d_up
-      draw_button(input, 9, 100, 290, this.buttons, this.pressed_buttons); // d_down
-      draw_button(input, 10, 140, 290, this.buttons, this.pressed_buttons); // d_right
-
-      draw_button(input, 11, 300, 185, this.buttons, this.pressed_buttons); // start
       // TODO: Extract magic number indexes to static vars.
-      draw_stick(input, 12, 0, 100, 220, 90, 2.844f, this.sticks); // a stick
-      draw_stick(input, 14, 1, 240, 260, 80, 3.2f, this.sticks); // c stick
+      draw_stick(input, ButtonIndexes.L_STICK_X, ButtonIndexes.L_STICK_Y, 0, 100, 220, 90, 2.844f, this.sticks); // a stick
+      draw_stick(input, ButtonIndexes.C_STICK_X, ButtonIndexes.C_STICK_Y, 1, 240, 260, 80, 3.2f, this.sticks); // c stick
     }
   }
 
   // TODO: Rename this and similar methods to drawStickBase, etc.
   // TODO: Extract to separate class, provide self as a PApplet object and call back.
-  public void draw_stick_base(final int index, final int x, final int y, final PImage[] stick_bases) {
+  public void draw_stick_base(
+      final int stickBaseIndex,
+      final int x,
+      final int y,
+      final PImage[] stick_bases
+  ) {
     // TODO: Normalize around one imageMode?
     super.imageMode(CENTER);
-    super.image(stick_bases[index], x, y);
+    super.image(stick_bases[stickBaseIndex], x, y);
     super.imageMode(CORNERS);
   }
 
   public void draw_stick(
       final String[] input,
-      final int input_index,
-      final int index,
+      final int xInputIndex,
+      final int yInputIndex,
+      final int stickImageIndex,
       final int x,
       final int y,
       final int distance,
@@ -194,26 +192,26 @@ public class MainSketch extends PApplet {
       final PImage[] sticks
   ) {
     super.imageMode(CENTER);
-    final int ax = Integer.parseInt(input[input_index]);
-    final int ay = Integer.parseInt(input[input_index + 1]);
+    final int ax = Integer.parseInt(input[xInputIndex]);
+    final int ay = Integer.parseInt(input[yInputIndex]);
 
     // TODO: Split into methods, fix integer division warnings.
-    super.image(sticks[index], x + (ax / scale) - (distance / 2), y - (ay / scale) + (distance / 2));
+    super.image(sticks[stickImageIndex], x + (ax / scale) - (distance / 2), y - (ay / scale) + (distance / 2));
     super.imageMode(CORNERS);
   }
 
   public void draw_button(
       final String[] input,
-      final int index,
+      final int arduinoInputIndex,
       final int x,
       final int y,
       final PImage[] buttons,
       final PImage[] pressed_buttons
   ) {
-    if (input[index].equals("0")) {
-      super.image(buttons[index], x, y);
+    if (input[arduinoInputIndex].equals("0")) {
+      super.image(buttons[arduinoInputIndex], x, y);
     } else {
-      super.image(pressed_buttons[index], x, y);
+      super.image(pressed_buttons[arduinoInputIndex], x, y);
     }
   }
 //
