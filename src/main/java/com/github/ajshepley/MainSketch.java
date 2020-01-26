@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import javax.swing.JOptionPane;
 import org.apache.commons.lang3.StringUtils;
 import processing.core.PApplet;
 import processing.core.PImage;
@@ -38,6 +39,18 @@ public class MainSketch extends PApplet {
 
   @Override
   public void setup() {
+    final String[] serials = Serial.list();
+    // First entry is COM1, second entry should be the arduino port.
+    if (serials.length < 2) {
+      this.errorMessageWindow(
+          "Cannot start GCC Display.",
+          "Couldn't detect the serial port. Make sure your Arduino is connected and powered.\n" +
+          "The program will now quit.",
+          true,
+          true
+      );
+    }
+
     // initializing the object by assigning a port and baud rate (must match that of Arduino)
     this.port = new Serial(this, Serial.list()[1], ARDUINO_BAUD_RATE);
     // function from serial library that throws out the first reading,
@@ -50,6 +63,7 @@ public class MainSketch extends PApplet {
   }
 
   // TODO: Extract/simplify method?
+  // TODO: Throw error if an image can't be found. Maybe make error vs. log configurable
   // super.loadImage sucks visually but it's important to distinguish Processing calls, for now.
   private void loadImages(
     final PImage[] buttons,
@@ -191,6 +205,23 @@ public class MainSketch extends PApplet {
       super.image(buttons[arduinoInputIndex], x, y);
     } else {
       super.image(pressed_buttons[arduinoInputIndex], x, y);
+    }
+  }
+
+  private void errorMessageWindow(
+      final String title,
+      final String message,
+      final boolean dumpStack,
+      final boolean exit
+  ) {
+    // TODO: Swing sucks but it gets the job done for now.
+    JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
+    if (dumpStack) {
+      Thread.dumpStack();
+    }
+
+    if (exit) {
+      System.exit(-1);
     }
   }
 
