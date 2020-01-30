@@ -1,5 +1,6 @@
 package com.github.ajshepley;
 
+import com.github.ajshepley.util.LoggingUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -7,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import javax.swing.JOptionPane;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import processing.core.PApplet;
@@ -46,7 +46,7 @@ public class MainSketch extends PApplet implements ImageLoader {
     final String[] serials = Serial.list();
     // First entry is COM1, second entry should be the arduino port.
     if (serials.length < 2) {
-      this.errorMessageWindow(
+      LoggingUtils.errorMessageWindow(
           "Cannot start GCC Display.",
           "Couldn't detect the serial port. Make sure your Arduino is connected and powered.\n" +
           "The program will now quit.",
@@ -103,7 +103,7 @@ public class MainSketch extends PApplet implements ImageLoader {
       final String raw = this.serialPort.readString();
 
       if (this.logRaw) {
-        this.logMessage("Raw string is: \n[" + raw.replace('\n', ' ') + "]", 0.1);
+        LoggingUtils.logMessage("Raw string is: \n[" + raw.replace('\n', ' ') + "]", 0.1);
       }
 
       if (StringUtils.isNotBlank(raw)) {
@@ -129,9 +129,8 @@ public class MainSketch extends PApplet implements ImageLoader {
         // [A, B, X, Y, Z, L, R, LS X, LS Y, CS X, CS Y]
         // Above ls/cs values are resting values, +/- 2
 
-        // TODO: Extract to logInput(input[]) method, make randomness clearer.
         if (this.logGCCInputs) {
-          this.logMessage("Input string is: \n" + Arrays.toString(input), 0.2);
+          LoggingUtils.logMessage("Input string is: \n" + Arrays.toString(input), 0.2);
         }
 
         if (input.length != ButtonIndexes.MAX_INDEX + 1) {
@@ -148,7 +147,7 @@ public class MainSketch extends PApplet implements ImageLoader {
         draw_stick(input, ButtonIndexes.C_STICK_X, ButtonIndexes.C_STICK_Y, 1, 240, 260, 80, 3.2f, this.sticks); // c stick
       }
     } catch (final Exception exc) {
-      this.errorMessageWindow(
+      LoggingUtils.errorMessageWindow(
           "Unknown fatal error.",
           "Program failed due to unknown error: " + exc.getMessage() +
             "\nStacktrace:\n" + ExceptionUtils.getStackTrace(exc),
@@ -197,32 +196,6 @@ public class MainSketch extends PApplet implements ImageLoader {
   public void drawButton(final ArduinoButton arduinoButton, final String currentButtonValue) {
     final PImage image = currentButtonValue.equals("0") ? arduinoButton.getBackImage() : arduinoButton.getFrontImage();
     super.image(image, arduinoButton.getX(), arduinoButton.getY());
-  }
-
-  // Random number between 0 and 1 will log if less than chance.
-  // TODO: Move to static helper file.
-  private void logMessage(final String message, final double chance) {
-    if (Math.random() < chance) {
-      System.out.println(message);
-    }
-  }
-
-  // TODO: Move to static helper file.
-  private void errorMessageWindow(
-      final String title,
-      final String message,
-      final boolean dumpStack,
-      final boolean exit
-  ) {
-    // TODO: Swing sucks but it gets the job done for now.
-    JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
-    if (dumpStack) {
-      Thread.dumpStack();
-    }
-
-    if (exit) {
-      System.exit(-1);
-    }
   }
 
   public static void main(final String[] args){
