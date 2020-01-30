@@ -17,14 +17,12 @@ public class MainSketch extends PApplet {
   private static final int WINDOW_WIDTH = 500;
   private static final int WINDOW_HEIGHT = 500;
 
-  // the number 10 is ASCII for linefeed (end of serial.println),
-  // later we will look for this to break up individual messages
-  // Adam: Not sure if this is utilized by PApplet in some way.
-  public final int end = 10;
+  // TODO: Make configurable.
+  private final boolean logRaw = false;
+  private final boolean logGCCInputs = true;
 
   // TODO: rename serialPort
-  // TODO: See if it works if we inline the initialization/assignment here, make final.
-  private Serial port;
+  private Serial serialPort;
 
   // TODO: Rename these arrays.
   private final PImage[] buttons = new PImage[12];
@@ -52,10 +50,11 @@ public class MainSketch extends PApplet {
     }
 
     // initializing the object by assigning a port and baud rate (must match that of Arduino)
-    this.port = new Serial(this, Serial.list()[1], ARDUINO_BAUD_RATE);
+    this.serialPort = new Serial(this, Serial.list()[1], ARDUINO_BAUD_RATE);
+
     // function from serial library that throws out the first reading,
     // in case we started reading in the middle of a string from Arduino
-    this.port.clear();
+    this.serialPort.clear();
 
     this.loadImages(this.buttons, this.pressed_buttons, this.stick_bases, this.sticks);
 
@@ -102,11 +101,11 @@ public class MainSketch extends PApplet {
 
   @Override
   public void draw() {
-    final String raw = this.port.readString();
+    final String raw = this.serialPort.readString();
 
-//    if (new java.util.Random().nextInt(10) / 2 > 3 && raw != null) {
-//      System.out.println("Raw string is: \n[" + raw.replace('\n', ' ') + "]");
-//    }
+    if (this.logRaw) {
+      this.logMessage("Raw string is: \n[" + raw.replace('\n', ' ') + "]", 0.2);
+    }
 
     if (StringUtils.isNotBlank(raw)) {
       final String[] inputGlob = raw.split("\r");
@@ -132,8 +131,8 @@ public class MainSketch extends PApplet {
       // Above ls/cs values are resting values, +/- 2
 
       // TODO: Extract to logInput(input[]) method, make randomness clearer.
-      if (new java.util.Random().nextInt(10) / 2 > 3) {
-        System.out.println("Input string is: \n" + Arrays.toString(input) + "");
+      if (this.logGCCInputs) {
+        this.logMessage("Input string is: \n" + Arrays.toString(input), 0.2);
       }
 
       // This won't work. The input for the 1.6 hex is now, inexplicably, only 11 digits long.
@@ -208,6 +207,15 @@ public class MainSketch extends PApplet {
     }
   }
 
+  // Random number between 0 and 1 will log if less than chance.
+  // TODO: Move to static helper file.
+  private void logMessage(final String message, final double chance) {
+    if (Math.random() < chance) {
+      System.out.println(message);
+    }
+  }
+
+  // TODO: Move to static helper file.
   private void errorMessageWindow(
       final String title,
       final String message,
