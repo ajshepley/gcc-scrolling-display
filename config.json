@@ -1,0 +1,84 @@
+{
+    "buttons": [
+        {
+            "buttonName": "a_button",
+            "arduinoInputIndex": 0,
+            "xPosition": 340,
+            "yPosition": 160,
+            "frontImagePath": "a_press.png",
+            "backImagePath": "a.png"
+        },
+        {
+            "buttonName": "b_button",
+            "arduinoInputIndex": 1,
+            "xPosition": 300,
+            "yPosition": 230,
+            "frontImagePath": "b_press.png",
+            "backImagePath": "b.png"
+        },
+        {
+            "buttonName": "x_button",
+            "arduinoInputIndex": 2,
+            "xPosition": 420,
+            "yPosition": 145,
+            "frontImagePath": "x_press.png",
+            "backImagePath": "x.png"
+        },
+        {
+            "buttonName": "y_button",
+            "arduinoInputIndex": 3,
+            "xPosition": 323,
+            "yPosition": 112,
+            "frontImagePath": "y_press.png",
+            "backImagePath": "y.png"
+        },
+        {
+            "buttonName": "z_button",
+            "arduinoInputIndex": 4,
+            "xPosition": 190,
+            "yPosition": 165,
+            "frontImagePath": "z_press.png",
+            "backImagePath": "z.png"
+        },
+        {
+            "buttonName": "l_button",
+            "arduinoInputIndex": 5,
+            "xPosition": 55,
+            "yPosition": 90,
+            "frontImagePath": "l_press.png",
+            "backImagePath": "l.png"
+        },
+        {
+            "buttonName": "r_button",
+            "arduinoInputIndex": 6,
+            "xPosition": 190,
+            "yPosition": 90,
+            "frontImagePath": "r_press.png",
+            "backImagePath": "r.png"
+        }
+    ],
+    "sticks": [
+        {
+            "buttonName": "c_stick",
+            "arduinoInputIndex": 9,
+            "yInputIndex": 10,
+            "xPosition": 240,
+            "yPosition": 260,
+            "distance": 80,
+            "scale": 3.2,
+            "frontImagePath": "c_stick.png",
+            "backImagePath": "c_stick_base.png"
+        },
+        {
+            "buttonName": "l_stick",
+            "arduinoInputIndex": 7,
+            "yInputIndex": 8,
+            "xPosition": 100,
+            "yPosition": 220,
+            "distance": 90,
+            "scale": 2.844,
+            "frontImagePath": "a_stick.png",
+            "backImagePath": "a_stick_base.png"
+        }
+    ]
+}
