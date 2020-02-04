@@ -3,10 +3,11 @@ package com.github.ajshepley.buttons.config;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+@SuppressWarnings("unused")
 @JsonDeserialize
 public class ConfigButton {
 
-  @JsonProperty(required = true)
+  @JsonProperty
   private String buttonName;
 
   @JsonProperty(required = true)

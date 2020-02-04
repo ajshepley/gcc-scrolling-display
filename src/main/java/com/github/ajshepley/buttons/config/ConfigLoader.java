@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.ajshepley.util.LoggingUtils;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import org.apache.commons.lang3.StringUtils;
 
 public class ConfigLoader {
 
@@ -22,9 +21,10 @@ public class ConfigLoader {
         return this.objectMapper.readValue(inputStream, ConfigFile.class);
       }
     } catch (final Exception exc) {
+      exc.printStackTrace();
       LoggingUtils.errorMessageWindow(
           "Fatal error loading config file.",
-          "Failed to load config file at: [" + configPath + "].",
+          "Failed to load config file at: [" + configPath + "].\nException: " + exc.getMessage(),
           true,
           true
       );
