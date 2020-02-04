@@ -3,13 +3,12 @@ package com.github.ajshepley;
 import com.github.ajshepley.buttons.ArduinoButton;
 import com.github.ajshepley.buttons.ArduinoButtonFactory;
 import com.github.ajshepley.buttons.ArduinoStick;
-import com.github.ajshepley.buttons.ButtonIndexes;
+import com.github.ajshepley.buttons.ButtonUtils;
 import com.github.ajshepley.buttons.config.ConfigFile;
 import com.github.ajshepley.buttons.config.ConfigLoader;
 import com.github.ajshepley.util.LoggingUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -33,11 +32,14 @@ public class MainSketch extends PApplet implements ImageLoader {
   private final boolean logRaw = false;
   private final boolean logGCCInputs = true;
 
+  private final List<ArduinoButton> arduinoButtons = new ArrayList<>();
+  private final List<ArduinoStick> arduinoSticks = new ArrayList<>();
+
+  private int maxButtonIndex;
+
   // TODO: rename serialPort
   private Serial serialPort;
 
-  private final List<ArduinoButton> arduinoButtons = new ArrayList<>();
-  private final List<ArduinoStick> arduinoSticks = new ArrayList<>();
 
   @Override
   public void settings() {
@@ -78,6 +80,7 @@ public class MainSketch extends PApplet implements ImageLoader {
     // TODO: It may be better to return a new collection rather than mutate local state.
     this.arduinoButtons.addAll(buttons);
     this.arduinoSticks.addAll(sticks);
+    this.maxButtonIndex = ButtonUtils.calculateLargestIndex(this.arduinoButtons, this.arduinoSticks);
   }
 
   @Override
@@ -122,7 +125,7 @@ public class MainSketch extends PApplet implements ImageLoader {
           LoggingUtils.logMessage("Input string is: \n" + Arrays.toString(input), 0.2);
         }
 
-        if (input.length != ButtonIndexes.MAX_INDEX + 1) {
+        if (input.length != this.maxButtonIndex + 1) {
           return;
         }
 
