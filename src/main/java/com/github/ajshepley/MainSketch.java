@@ -4,6 +4,8 @@ import com.github.ajshepley.buttons.ArduinoButton;
 import com.github.ajshepley.buttons.ArduinoButtonFactory;
 import com.github.ajshepley.buttons.ArduinoStick;
 import com.github.ajshepley.buttons.ButtonIndexes;
+import com.github.ajshepley.buttons.config.ConfigFile;
+import com.github.ajshepley.buttons.config.ConfigLoader;
 import com.github.ajshepley.util.LoggingUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,50 +65,19 @@ public class MainSketch extends PApplet implements ImageLoader {
     // in case we started reading in the middle of a string from Arduino
     this.serialPort.clear();
 
-    this.setupButtons();
-    this.setupSticks();
+    this.setupButtonsAndSticks();
 
     super.background(0,0,0);
   }
 
-  // TODO: Extract to json or ini file, load dynamically.
-  private void setupButtons() {
-    final ArduinoButton aButton = this.arduinoButtonFactory.createButton(ButtonIndexes.A, 340f, 160f, "a_press.png", "a.png");
-    final ArduinoButton bButton = this.arduinoButtonFactory.createButton(ButtonIndexes.B, 300f, 230f, "b_press.png", "b.png");
-    final ArduinoButton xButton = this.arduinoButtonFactory.createButton(ButtonIndexes.X, 420f, 145f, "x_press.png", "x.png");
-    final ArduinoButton yButton = this.arduinoButtonFactory.createButton(ButtonIndexes.Y, 323f, 112f, "y_press.png", "y.png");
-    final ArduinoButton lButton = this.arduinoButtonFactory.createButton(ButtonIndexes.L, 55f, 90f, "l_press.png", "l.png");
-    final ArduinoButton rButton = this.arduinoButtonFactory.createButton(ButtonIndexes.R, 190f, 90f, "r_press.png", "r.png");
-    final ArduinoButton zButton = this.arduinoButtonFactory.createButton(ButtonIndexes.Z, 190f, 165f, "z_press.png", "z.png");
+  private void setupButtonsAndSticks() {
+    final ConfigFile userConfig = new ConfigLoader().loadConfig();
+    final List<ArduinoButton> buttons =  this.arduinoButtonFactory.createButtonsFromConfig(userConfig);
+    final List<ArduinoStick> sticks = this.arduinoButtonFactory.createSticksFromConfig(userConfig);
 
     // TODO: It may be better to return a new collection rather than mutate local state.
-    Collections.addAll(this.arduinoButtons, aButton, bButton, xButton, yButton, lButton, rButton, zButton);
-  }
-
-  // TODO: Extract to json file, load dynamically.
-  private void setupSticks() {
-    final ArduinoStick cStick = this.arduinoButtonFactory.createStick(
-        ButtonIndexes.C_STICK_X,
-        ButtonIndexes.C_STICK_Y,
-        240,
-        260,
-        80,
-        3.2f,
-        "c_stick.png",
-        "c_stick_base.png"
-    );
-    final ArduinoStick lStick = this.arduinoButtonFactory.createStick(
-        ButtonIndexes.L_STICK_X,
-        ButtonIndexes.L_STICK_Y,
-        100,
-        220,
-        90,
-        2.844f,
-        "a_stick.png",
-        "a_stick_base.png"
-    );
-
-    Collections.addAll(this.arduinoSticks, lStick, cStick);
+    this.arduinoButtons.addAll(buttons);
+    this.arduinoSticks.addAll(sticks);
   }
 
   @Override
