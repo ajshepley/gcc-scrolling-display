@@ -14,14 +14,14 @@ public class ArduinoButton {
 
   public ArduinoButton(
       final int arduinoInputIndex,
-      final float x,
-      final float y,
+      final float xRenderPosition,
+      final float yRenderPosition,
       final PImage frontImage,
       final PImage backImage
   ) {
     this.arduinoInputIndex = arduinoInputIndex;
-    this.x = x;
-    this.y = y;
+    this.x = xRenderPosition;
+    this.y = yRenderPosition;
     this.frontImage = frontImage;
     this.backImage = backImage;
   }
@@ -30,11 +30,11 @@ public class ArduinoButton {
     return this.arduinoInputIndex;
   }
 
-  public float getX() {
+  public float getXRenderPosition() {
     return this.x;
   }
 
-  public float getY() {
+  public float getYRenderPosition() {
     return this.y;
   }
 

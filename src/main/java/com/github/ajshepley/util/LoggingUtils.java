@@ -4,7 +4,7 @@ import javax.swing.JOptionPane;
 
 public class LoggingUtils {
 
-  private void LoggingUtils() {
+  private LoggingUtils() {
     // no-op
   }
 

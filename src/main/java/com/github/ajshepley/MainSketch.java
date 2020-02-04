@@ -30,11 +30,8 @@ public class MainSketch extends PApplet implements ImageLoader {
   // TODO: rename serialPort
   private Serial serialPort;
 
-  private final List<ArduinoButton> arduinoButtons = new ArrayList<ArduinoButton>();
-
-  // TODO: Rename these arrays.
-  private final PImage[] stick_bases = new PImage[2];
-  private final PImage[] sticks = new PImage[2];
+  private final List<ArduinoButton> arduinoButtons = new ArrayList<>();
+  private final List<ArduinoStick> arduinoSticks = new ArrayList<>();
 
   @Override
   public void settings() {
@@ -63,8 +60,7 @@ public class MainSketch extends PApplet implements ImageLoader {
     this.serialPort.clear();
 
     this.setupButtons();
-
-    this.loadImages(this.stick_bases, this.sticks);
+    this.setupSticks();
 
     super.background(0,0,0);
   }
@@ -79,22 +75,40 @@ public class MainSketch extends PApplet implements ImageLoader {
     final ArduinoButton rButton = this.arduinoButtonFactory.createButton(ButtonIndexes.R, 190f, 90f, "r_press.png", "r.png");
     final ArduinoButton zButton = this.arduinoButtonFactory.createButton(ButtonIndexes.Z, 190f, 165f, "z_press.png", "z.png");
 
-    // TODO: May be better to return a new collection rather than mutate local state.
+    // TODO: It may be better to return a new collection rather than mutate local state.
     Collections.addAll(this.arduinoButtons, aButton, bButton, xButton, yButton, lButton, rButton, zButton);
   }
 
-  // TODO: Extract/simplify method?
-  // TODO: Throw error if an image can't be found. Maybe make error vs. log configurable
-  // super.loadImage sucks visually but it's important to distinguish Processing calls, for now.
-  private void loadImages(
-      final PImage[] stick_bases,
-      final PImage[] sticks
-  ) {
-    stick_bases[0] = super.loadImage("a_stick_base.png");
-    sticks[0] = super.loadImage("a_stick.png");
+  // TODO: Extract to json file, load dynamically.
+  private void setupSticks() {
+    final ArduinoStick cStick = this.arduinoButtonFactory.createStick(
+        ButtonIndexes.C_STICK_X,
+        ButtonIndexes.C_STICK_Y,
+        240,
+        260,
+        80,
+        3.2f,
+        "c_stick.png",
+        "c_stick_base.png"
+    );
+    final ArduinoStick lStick = this.arduinoButtonFactory.createStick(
+        ButtonIndexes.L_STICK_X,
+        ButtonIndexes.L_STICK_Y,
+        100,
+        220,
+        90,
+        2.844f,
+        "a_stick.png",
+        "a_stick_base.png"
+    );
 
-    stick_bases[1] = super.loadImage("c_stick_base.png");
-    sticks[1] = super.loadImage("c_stick.png");
+    Collections.addAll(this.arduinoSticks, lStick, cStick);
+  }
+
+  @Override
+  public PImage loadImage(final String filename) {
+    // TODO: Detect error and log or open window.
+    return super.loadImage(filename);
   }
 
   @Override
@@ -124,7 +138,7 @@ public class MainSketch extends PApplet implements ImageLoader {
         // PApplet.split(serial, ',');
         final String[] input = parsedSerial.split(",");
 
-        // FIXME: New input is 11 digits long for arduino 1.6 hex. No DPAD or Start buttons (hence, not 16).
+        // input is 11 digits long for arduino 1.6 hex. No DPAD or Start buttons (hence, not 16).
         // [0, 0, 0, 0, 0, 0, 0, 126, 117, 126, 129]
         // [A, B, X, Y, Z, L, R, LS X, LS Y, CS X, CS Y]
         // Above ls/cs values are resting values, +/- 2
@@ -137,14 +151,12 @@ public class MainSketch extends PApplet implements ImageLoader {
           return;
         }
 
-        draw_stick_base(0, 100, 220, this.stick_bases); // a stick
-        draw_stick_base(1, 240, 260, this.stick_bases); // c stick
+        // TODO: Find a way to enqueue the super.image calls and then render all of them at the end, so that we can let the user specify the render order.
+        this.arduinoSticks.forEach(stick ->
+            this.drawStick(stick, input[stick.getXInputIndex()], input[stick.getYInputIndex()])
+        );
 
         this.arduinoButtons.forEach(button -> this.drawButton(button, input[button.getArduinoInputIndex()]));
-
-        // TODO: Extract magic number indexes to static vars.
-        draw_stick(input, ButtonIndexes.L_STICK_X, ButtonIndexes.L_STICK_Y, 0, 100, 220, 90, 2.844f, this.sticks); // a stick
-        draw_stick(input, ButtonIndexes.C_STICK_X, ButtonIndexes.C_STICK_Y, 1, 240, 260, 80, 3.2f, this.sticks); // c stick
       }
     } catch (final Exception exc) {
       LoggingUtils.errorMessageWindow(
@@ -157,45 +169,22 @@ public class MainSketch extends PApplet implements ImageLoader {
     }
   }
 
-  // TODO: Rename this and similar methods to drawStickBase, etc.
-  // TODO: Extract to separate class, provide self as a PApplet object and call back.
-  public void draw_stick_base(
-      final int stickBaseIndex,
-      final int x,
-      final int y,
-      final PImage[] stick_bases
-  ) {
-    // TODO: Normalize around one imageMode?
+  public void drawStick(final ArduinoStick stick, final String currentXValue, final String currentYValue) {
     super.imageMode(CENTER);
-    super.image(stick_bases[stickBaseIndex], x, y);
-    super.imageMode(CORNERS);
-  }
+    super.image(stick.getStickBaseImage(), stick.getXRenderPosition(), stick.getYRenderPosition());
 
-  public void draw_stick(
-      final String[] input,
-      final int xInputIndex,
-      final int yInputIndex,
-      final int stickImageIndex,
-      final int x,
-      final int y,
-      final int distance,
-      final float scale,
-      final PImage[] sticks
-  ) {
-    super.imageMode(CENTER);
-    final int ax = Integer.parseInt(input[xInputIndex]);
-    final int ay = Integer.parseInt(input[yInputIndex]);
+    final int ax = Integer.parseInt(currentXValue);
+    final int ay = Integer.parseInt(currentYValue);
+    final float stickXPosition = stick.getXRenderPosition() + (ax / stick.getScale()) - (stick.getDistance() / 2.0f);
+    final float stickYPosition = stick.getYRenderPosition() - (ay / stick.getScale()) + (stick.getDistance() / 2.0f);
 
-    final float stickXPosition = x + (ax / scale) - (distance / 2.0f);
-    final float stickYPosition = y - (ay / scale) + (distance / 2.0f);
-
-    super.image(sticks[stickImageIndex], stickXPosition, stickYPosition);
+    super.image(stick.getStickImage(), stickXPosition, stickYPosition);
     super.imageMode(CORNERS);
   }
 
   public void drawButton(final ArduinoButton arduinoButton, final String currentButtonValue) {
     final PImage image = currentButtonValue.equals("0") ? arduinoButton.getBackImage() : arduinoButton.getFrontImage();
-    super.image(image, arduinoButton.getX(), arduinoButton.getY());
+    super.image(image, arduinoButton.getXRenderPosition(), arduinoButton.getYRenderPosition());
   }
 
   public static void main(final String[] args){
