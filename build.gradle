@@ -108,6 +108,11 @@ task copyData {
             into "$buildDir/${exeDir}/data"
             include '**/*.png'
         }
+        copy {
+            from './'
+            into "$buildDir/${exeDir}"
+            include 'config.json'
+        }
     }
 }
 
