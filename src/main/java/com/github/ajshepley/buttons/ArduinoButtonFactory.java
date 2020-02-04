@@ -1,13 +1,18 @@
-package com.github.ajshepley;
+package com.github.ajshepley.buttons;
 
+import com.github.ajshepley.ImageLoader;
+import com.github.ajshepley.buttons.config.ConfigLoader;
 import processing.core.PImage;
 
 public class ArduinoButtonFactory {
 
   private final ImageLoader imageLoader;
+  private final ConfigLoader configLoader;
 
   public ArduinoButtonFactory(final ImageLoader imageLoader) {
+    this.configLoader = new ConfigLoader();
     this.imageLoader = imageLoader;
+    this.configLoader.loadConfig(null);
   }
 
   public ArduinoButton createButton(

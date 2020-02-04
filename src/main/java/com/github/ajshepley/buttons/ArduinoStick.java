@@ -1,4 +1,4 @@
-package com.github.ajshepley;
+package com.github.ajshepley.buttons;
 
 import processing.core.PImage;
 
